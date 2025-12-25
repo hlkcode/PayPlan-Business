@@ -47,6 +47,16 @@ const toggleSidebar = () => {
             <span v-if="!isCollapsed">Dashboard</span>
         </router-link>
 
+        <router-link to="/companies" class="nav-item" active-class="active" :title="isCollapsed ? 'Companies' : ''">
+             <Building :size="20" />
+            <span v-if="!isCollapsed">Companies</span>
+        </router-link>
+
+         <router-link to="/requests" class="nav-item" active-class="active" :title="isCollapsed ? 'Requests' : ''">
+            <Inbox :size="20" />
+            <span v-if="!isCollapsed">Requests</span>
+        </router-link>
+
         <div class="nav-section-label" v-if="!isCollapsed">ACCOUNTS</div>
         <div class="nav-separator" v-else></div>
 
@@ -65,21 +75,12 @@ const toggleSidebar = () => {
             <span v-if="!isCollapsed">Management</span>
         </router-link>
 
-        <div class="nav-section-label" v-if="!isCollapsed">REQUESTS</div>
-        <div class="nav-separator" v-else></div>
 
-         <router-link to="/requests" class="nav-item" active-class="active" :title="isCollapsed ? 'Requests' : ''">
-            <Inbox :size="20" />
-            <span v-if="!isCollapsed">Requests</span>
-        </router-link>
 
         <div class="nav-section-label" v-if="!isCollapsed">SETTINGS</div>
         <div class="nav-separator" v-else></div>
 
-        <router-link to="/companies" class="nav-item" active-class="active" :title="isCollapsed ? 'Companies' : ''">
-             <Building :size="20" />
-            <span v-if="!isCollapsed">Companies</span>
-        </router-link>
+
 
         <router-link to="/settings/roles" class="nav-item" active-class="active" :title="isCollapsed ? 'Roles' : ''">
              <Users :size="20" />

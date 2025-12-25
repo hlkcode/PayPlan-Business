@@ -204,89 +204,92 @@ defineExpose({ refresh: fetchData })
   <div class="data-table-container">
     <div class="table-header">
       <div class="header-left">
-          <h3 v-if="title" class="table-title">{{ title }}</h3>
+          <div class="header-controls">
+               <!-- Search -->
+              <div v-if="searchable" class="search-box">
+                <Search :size="16" class="search-icon" />
+                <input
+                  v-model="searchQuery"
+                  @input="onSearch"
+                  placeholder="Search..."
+                  class="control-input"
+                />
+              </div>
+
+              <!-- Filters -->
+              <BaseDropdown v-if="filters && filters.length > 0" align="left">
+                  <template #trigger>
+                       <button class="control-btn" :class="{ 'active': appliedFiltersCount > 0 }">
+                            <Filter :size="16" />
+                            <span>Filter</span>
+                            <span v-if="appliedFiltersCount > 0" class="badge">{{ appliedFiltersCount }}</span>
+                       </button>
+                  </template>
+                  <div class="dropdown-panel">
+                      <div class="panel-header">
+                          <span>Filter Options</span>
+                          <button v-if="appliedFiltersCount > 0" @click="clearFilters" class="clear-btn">Clear</button>
+                      </div>
+                      <div class="filters-grid">
+                          <div v-for="filter in filters" :key="filter.key" class="filter-item">
+                              <label>{{ filter.label }}</label>
+
+                              <select v-if="filter.type === 'select'" v-model="filterValues[filter.key]" class="filter-input" @change="fetchData">
+                                    <option value="">All</option>
+                                    <option v-for="opt in filter.options" :key="String(opt.value)" :value="opt.value">
+                                        {{ opt.label }}
+                                    </option>
+                              </select>
+
+                              <input
+                                v-else-if="filter.type === 'date'"
+                                type="date"
+                                v-model="filterValues[filter.key]"
+                                class="filter-input"
+                                @change="fetchData"
+                             />
+
+                              <input
+                                 v-else
+                                 type="text"
+                                 v-model="filterValues[filter.key]"
+                                 class="filter-input"
+                                 :placeholder="filter.placeholder"
+                                 @change="fetchData"
+                               />
+                          </div>
+                      </div>
+                  </div>
+              </BaseDropdown>
+
+               <!-- Columns -->
+               <BaseDropdown align="left">
+                    <template #trigger>
+                        <button class="control-btn">
+                            <Columns :size="16" />
+                            <span>View</span>
+                        </button>
+                    </template>
+                    <div class="dropdown-list">
+                        <div class="list-header">Toggle Columns</div>
+                        <label v-for="col in columns" :key="col.key" class="column-toggle">
+                            <BaseCheckbox
+                                :modelValue="!hiddenColumns.has(col.key)"
+                                @update:modelValue="toggleColumn(col.key)"
+                                :label="col.label"
+                            />
+                        </label>
+                    </div>
+               </BaseDropdown>
+          </div>
+
           <div v-if="selectable && selectedRows.size > 0" class="bulk-actions-slot">
                <slot name="bulk-actions" :selected="Array.from(selectedRows)"></slot>
           </div>
       </div>
 
-      <div class="header-controls">
-           <!-- Search -->
-          <div v-if="searchable" class="search-box">
-            <Search :size="16" class="search-icon" />
-            <input
-              v-model="searchQuery"
-              @input="onSearch"
-              placeholder="Search..."
-              class="control-input"
-            />
-          </div>
-
-          <!-- Filters -->
-          <BaseDropdown v-if="filters && filters.length > 0" align="right">
-              <template #trigger>
-                   <button class="control-btn" :class="{ 'active': appliedFiltersCount > 0 }">
-                        <Filter :size="16" />
-                        <span>Filter</span>
-                        <span v-if="appliedFiltersCount > 0" class="badge">{{ appliedFiltersCount }}</span>
-                   </button>
-              </template>
-              <div class="dropdown-panel">
-                  <div class="panel-header">
-                      <span>Filter Options</span>
-                      <button v-if="appliedFiltersCount > 0" @click="clearFilters" class="clear-btn">Clear</button>
-                  </div>
-                  <div class="filters-grid">
-                      <div v-for="filter in filters" :key="filter.key" class="filter-item">
-                          <label>{{ filter.label }}</label>
-
-                          <select v-if="filter.type === 'select'" v-model="filterValues[filter.key]" class="filter-input" @change="fetchData">
-                                <option value="">All</option>
-                                <option v-for="opt in filter.options" :key="String(opt.value)" :value="opt.value">
-                                    {{ opt.label }}
-                                </option>
-                          </select>
-
-                          <input
-                            v-else-if="filter.type === 'date'"
-                            type="date"
-                            v-model="filterValues[filter.key]"
-                            class="filter-input"
-                            @change="fetchData"
-                         />
-
-                          <input
-                             v-else
-                             type="text"
-                             v-model="filterValues[filter.key]"
-                             class="filter-input"
-                             :placeholder="filter.placeholder"
-                             @change="fetchData"
-                           />
-                      </div>
-                  </div>
-              </div>
-          </BaseDropdown>
-
-           <!-- Columns -->
-           <BaseDropdown align="right">
-                <template #trigger>
-                    <button class="control-btn">
-                        <Columns :size="16" />
-                        <span>View</span>
-                    </button>
-                </template>
-                <div class="dropdown-list">
-                    <div class="list-header">Toggle Columns</div>
-                    <label v-for="col in columns" :key="col.key" class="column-toggle">
-                        <BaseCheckbox
-                            :modelValue="!hiddenColumns.has(col.key)"
-                            @update:modelValue="toggleColumn(col.key)"
-                            :label="col.label"
-                        />
-                    </label>
-                </div>
-           </BaseDropdown>
+      <div class="header-right">
+           <slot name="header-actions"></slot>
       </div>
     </div>
 

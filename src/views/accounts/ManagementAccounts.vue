@@ -236,6 +236,12 @@ const onCreateSubmit = async () => {
                 </div>
             </BaseDropdown>
         </template>
+
+        <template #header-actions>
+            <button @click="controller.showCreateDialog.value = true" class="create-btn">
+                + Create Account
+            </button>
+        </template>
         <template #cell-surname="{ row }">
             {{ row.surname }} {{ row.otherNames }}
         </template>
