@@ -122,7 +122,7 @@ const onBulkActivate = async (activate: boolean) => {
   <div>
     <div class="page-header">
         <h1>Business Accounts</h1>
-        <router-link to="/admin/accounts/business/create" class="create-btn">Create Business</router-link>
+
     </div>
 
     <DataTable

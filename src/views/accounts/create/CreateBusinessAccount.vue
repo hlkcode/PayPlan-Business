@@ -12,7 +12,7 @@ const form = ref({
     password: '',
     companyName: '',
     tin: '',
-    phoneNumber: '', 
+    phoneNumber: '',
     address: '',
     countryId: 80 // Defaulting to Ghana
 })
@@ -26,7 +26,7 @@ const submit = async () => {
     isLoading.value = true
     try {
         await axios.post('/business-accounts', form.value)
-        router.push('/admin/accounts/business')
+        router.push('/accounts/business')
     } catch (error: unknown) {
         console.error('Failed to create account', error)
         let msg = 'Failed to create account'
@@ -59,7 +59,7 @@ const submit = async () => {
                     <label>Company Name *</label>
                     <input v-model="form.companyName" type="text" required class="premium-input" placeholder="Acme Corp" />
                 </div>
-                
+
                  <div class="form-group">
                     <label>TIN</label>
                     <input v-model="form.tin" type="text" class="premium-input" placeholder="Tax ID" />
@@ -79,7 +79,7 @@ const submit = async () => {
                     <label>Phone Number</label>
                     <input v-model="form.phoneNumber" type="tel" class="premium-input" placeholder="233..." />
                 </div>
-                
+
                  <div class="form-group">
                     <label>Country</label>
                     <select v-model="form.countryId" class="premium-input">

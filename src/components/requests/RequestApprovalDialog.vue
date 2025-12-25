@@ -175,8 +175,9 @@ const handleReject = () => {
     border-radius: 4px;
     font-size: 0.75rem;
     background: #e2e8f0;
+    text-transform: capitalize;
 }
-.status-badge.pending { background: #fef9c3; color: #854d0e; }
+.status-badge.pending, .status-badge.pending-approval { background: #fef9c3; color: #854d0e; }
 .status-badge.approved { background: #dcfce7; color: #166534; }
 .status-badge.rejected { background: #fee2e2; color: #991b1b; }
 </style>

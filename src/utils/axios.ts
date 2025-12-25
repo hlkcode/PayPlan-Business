@@ -87,7 +87,7 @@ instance.interceptors.response.use(
         if (!isSignupPage) {
           // Force logout
           authStore.logout()
-          window.location.href = '/admin/login'
+          window.location.href = '/login'
         }
 
         return Promise.reject(err)

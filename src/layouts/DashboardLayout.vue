@@ -42,7 +42,7 @@ const toggleSidebar = () => {
       </div>
 
       <nav class="nav-menu">
-        <router-link to="/admin/dashboard" class="nav-item" active-class="active" :title="isCollapsed ? 'Dashboard' : ''">
+        <router-link to="/dashboard" class="nav-item" active-class="active" :title="isCollapsed ? 'Dashboard' : ''">
             <LayoutDashboard :size="20" />
             <span v-if="!isCollapsed">Dashboard</span>
         </router-link>
@@ -50,17 +50,17 @@ const toggleSidebar = () => {
         <div class="nav-section-label" v-if="!isCollapsed">ACCOUNTS</div>
         <div class="nav-separator" v-else></div>
 
-        <router-link to="/admin/accounts/personal" class="nav-item" active-class="active" :title="isCollapsed ? 'Personal Accounts' : ''">
+        <router-link to="/accounts/personal" class="nav-item" active-class="active" :title="isCollapsed ? 'Personal Accounts' : ''">
             <User :size="20" />
             <span v-if="!isCollapsed">Personal</span>
         </router-link>
 
-        <router-link to="/admin/accounts/business" class="nav-item" active-class="active" :title="isCollapsed ? 'Business Accounts' : ''">
+        <router-link to="/accounts/business" class="nav-item" active-class="active" :title="isCollapsed ? 'Business Accounts' : ''">
             <Briefcase :size="20" />
             <span v-if="!isCollapsed">Business</span>
         </router-link>
 
-        <router-link to="/admin/accounts/management" class="nav-item" active-class="active" :title="isCollapsed ? 'Management Accounts' : ''">
+        <router-link to="/accounts/management" class="nav-item" active-class="active" :title="isCollapsed ? 'Management Accounts' : ''">
             <ShieldCheck :size="20" />
             <span v-if="!isCollapsed">Management</span>
         </router-link>
@@ -68,7 +68,7 @@ const toggleSidebar = () => {
         <div class="nav-section-label" v-if="!isCollapsed">REQUESTS</div>
         <div class="nav-separator" v-else></div>
 
-         <router-link to="/admin/requests" class="nav-item" active-class="active" :title="isCollapsed ? 'Requests' : ''">
+         <router-link to="/requests" class="nav-item" active-class="active" :title="isCollapsed ? 'Requests' : ''">
             <Inbox :size="20" />
             <span v-if="!isCollapsed">Requests</span>
         </router-link>
@@ -76,27 +76,27 @@ const toggleSidebar = () => {
         <div class="nav-section-label" v-if="!isCollapsed">SETTINGS</div>
         <div class="nav-separator" v-else></div>
 
-        <router-link to="/admin/companies" class="nav-item" active-class="active" :title="isCollapsed ? 'Companies' : ''">
+        <router-link to="/companies" class="nav-item" active-class="active" :title="isCollapsed ? 'Companies' : ''">
              <Building :size="20" />
             <span v-if="!isCollapsed">Companies</span>
         </router-link>
 
-        <router-link to="/admin/settings/roles" class="nav-item" active-class="active" :title="isCollapsed ? 'Roles' : ''">
+        <router-link to="/settings/roles" class="nav-item" active-class="active" :title="isCollapsed ? 'Roles' : ''">
              <Users :size="20" />
             <span v-if="!isCollapsed">Roles</span>
         </router-link>
 
-        <router-link to="/admin/countries" class="nav-item" active-class="active" :title="isCollapsed ? 'Countries' : ''">
+        <router-link to="/countries" class="nav-item" active-class="active" :title="isCollapsed ? 'Countries' : ''">
             <Globe :size="20" />
             <span v-if="!isCollapsed">Countries</span>
         </router-link>
 
-         <router-link to="/admin/settings/document-types" class="nav-item" active-class="active" :title="isCollapsed ? 'Document Types' : ''">
+         <router-link to="/settings/document-types" class="nav-item" active-class="active" :title="isCollapsed ? 'Document Types' : ''">
             <FileText :size="20" />
             <span v-if="!isCollapsed">Doc Types</span>
         </router-link>
 
-        <router-link to="/admin/settings/country-documents" class="nav-item" active-class="active" :title="isCollapsed ? 'Country Documents' : ''">
+        <router-link to="/settings/country-documents" class="nav-item" active-class="active" :title="isCollapsed ? 'Country Documents' : ''">
             <Files :size="20" />
             <span v-if="!isCollapsed">Country Docs</span>
         </router-link>
@@ -105,7 +105,7 @@ const toggleSidebar = () => {
 
     <main class="content">
       <header class="top-bar">
-        <h2>Admin Portal</h2>
+        <h2>Portal</h2>
         <div class="header-actions">
            <div class="action-items">
                <button @click="toggleTheme" class="icon-btn theme-toggle">

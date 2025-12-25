@@ -3,6 +3,7 @@ import { ref } from 'vue'
 import DataTable from '@/components/core/DataTable.vue'
 import axios from '@/utils/axios'
 import { useToastStore } from '@/stores/toast'
+import ConfirmDialog from '@/components/core/dialog/ConfirmDialog.vue'
 import { Lock, Unlock, ChevronDown } from 'lucide-vue-next'
 import BaseDropdown from '@/components/core/dropdown/BaseDropdown.vue'
 
@@ -114,7 +115,7 @@ const onBulkActivate = async (activate: boolean) => {
   <div>
     <div class="page-header">
         <h1>Personal Accounts</h1>
-        <router-link to="/admin/accounts/personal/create" class="create-btn">Create Personal</router-link>
+
     </div>
 
     <DataTable

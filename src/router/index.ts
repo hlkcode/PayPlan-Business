@@ -29,12 +29,12 @@ const router = createRouter({
       },
     },
     {
-      path: '/dashboard',
+      path: '/',
       component: DashboardLayout,
       meta: { requiresAuth: true },
       children: [
         {
-          path: '', // Default to dashboard
+          path: 'dashboard',
           name: 'dashboard',
           component: () => import('@/views/dashboard/Dashboard.vue'),
         },
@@ -109,9 +109,9 @@ router.beforeEach((to, from, next) => {
   const isAuthenticated = !!authStore.token
 
   if (to.meta.requiresAuth && !isAuthenticated) {
-    next('/admin/login')
+    next('/login')
   } else if (to.meta.guest && isAuthenticated) {
-    next('/admin/dashboard')
+    next('/dashboard')
   } else {
     next()
   }

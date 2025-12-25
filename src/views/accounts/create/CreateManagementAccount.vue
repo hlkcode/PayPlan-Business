@@ -33,7 +33,7 @@ const submit = async () => {
     try {
         // According to docs/schema: params are email, role, etc.
         await axios.post('/management-accounts', form.value)
-        router.push('/admin/accounts/management')
+        router.push('/accounts/management')
     } catch (error: unknown) { // Typed as unknown for safety
         console.error('Failed to create account', error)
         let msg = 'Failed to create account'
@@ -66,7 +66,7 @@ const submit = async () => {
                     <label>Email *</label>
                     <input v-model="form.email" type="email" required class="premium-input" placeholder="admin@example.com" />
                 </div>
-                
+
                 <div class="form-group">
                     <label>Role *</label>
                     <select v-model="form.role" required class="premium-input">
@@ -91,7 +91,7 @@ const submit = async () => {
                     <label>Phone Number</label>
                     <input v-model="form.phoneNumber" type="tel" class="premium-input" placeholder="233..." />
                 </div>
-                
+
                  <div class="form-group">
                     <label>Country</label>
                     <select v-model="form.countryId" class="premium-input">

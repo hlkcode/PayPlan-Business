@@ -33,7 +33,7 @@ const handleLogin = async () => {
       message: 'You have successfully logged in.',
     })
 
-    router.push('/admin/dashboard')
+    router.push('/dashboard')
 
   } catch (err: unknown) {
     console.error('Login failed', err)
@@ -114,7 +114,7 @@ const handleLogin = async () => {
       <div class="card-footer">
         <a href="#" class="forgot-link">Forgot Password?</a>
         <div class="signup-prompt">
-            Don't have an account? <router-link to="/admin/signup">Sign Up</router-link>
+            Don't have an account? <router-link to="/signup">Sign Up</router-link>
         </div>
       </div>
     </div>

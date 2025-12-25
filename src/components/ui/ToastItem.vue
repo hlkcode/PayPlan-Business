@@ -62,7 +62,7 @@ const toastClasses = computed(() => {
     <div class="toast-icon-wrapper">
       <component :is="iconComponent" class="toast-icon" />
     </div>
-    
+
     <div class="toast-content">
       <h3 v-if="toast.title" class="toast-title">{{ toast.title }}</h3>
       <p class="toast-message">{{ toast.message }}</p>
@@ -71,11 +71,11 @@ const toastClasses = computed(() => {
     <button @click="removeToast" class="toast-close" aria-label="Close">
       <X class="w-4 h-4" />
     </button>
-    
+
     <!-- Progress bar for auto-dismiss -->
-    <div 
-      v-if="toast.duration !== 0" 
-      class="toast-progress" 
+    <div
+      v-if="toast.duration !== 0"
+      class="toast-progress"
       :style="{ animationDuration: `${toast.duration}ms` }"
     ></div>
   </div>
@@ -101,7 +101,7 @@ const toastClasses = computed(() => {
   border: 1px solid rgba(0,0,0,0.05);
 }
 
-/* Dark mode fallback if variables not present, but trying to use variables */ 
+/* Dark mode fallback if variables not present, but trying to use variables */
 @media (prefers-color-scheme: dark) {
   .toast-item {
     background: #1e1e1e;
@@ -139,12 +139,12 @@ const toastClasses = computed(() => {
   font-weight: 600;
   font-size: 0.95rem;
   margin-bottom: 2px;
-  color: inherit;
+  color: #111827; /* Gray 900 */
 }
 
 .toast-message {
   font-size: 0.875rem;
-  color: inherit;
+  color: #374151; /* Gray 700 */
   opacity: 0.9;
   line-height: 1.4;
 }

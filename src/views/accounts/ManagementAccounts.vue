@@ -201,7 +201,7 @@ const onCreateSubmit = async () => {
   <div>
     <div class="page-header">
         <h1>Management Accounts</h1>
-        <button @click="controller.showCreateDialog.value = true" class="create-btn">Create New User</button>
+
     </div>
 
     <DataTable
@@ -330,7 +330,7 @@ const onCreateSubmit = async () => {
         v-model:show="showConfirmDialog"
         :title="confirmConfig.title"
         :message="confirmConfig.message"
-        type="danger"
+        type="warning"
         :loading="confirmLoading"
         @confirm="handleConfirm"
     />

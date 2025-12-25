@@ -20,7 +20,7 @@ const submit = async () => {
     isLoading.value = true
     try {
         await axios.post('/personal-accounts', form.value)
-        router.push('/admin/accounts/personal')
+        router.push('/accounts/personal')
     } catch (error: unknown) {
         console.error('Failed to create account', error)
          let msg = 'Failed to create account'
@@ -58,7 +58,7 @@ const submit = async () => {
                     <label>PIN (5 Digits) *</label>
                     <input v-model="form.pin" type="password" maxlength="5" minlength="5" required class="premium-input" placeholder="*****" />
                 </div>
-                
+
                 <div class="form-group">
                     <label>Email</label>
                     <input v-model="form.email" type="email" class="premium-input" placeholder="user@example.com" />

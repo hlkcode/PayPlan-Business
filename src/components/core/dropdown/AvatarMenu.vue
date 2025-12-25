@@ -19,7 +19,7 @@ const triggerLogout = () => {
 
 const onConfirmLogout = () => {
     authStore.logout()
-    router.push('/admin/login')
+    router.push('/login')
     showConfirmLogout.value = false
 }
 </script>

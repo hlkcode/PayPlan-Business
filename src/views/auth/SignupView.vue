@@ -70,7 +70,7 @@ const handleSignup = async () => {
             title: 'Account Created',
             message: 'Your account has been created successfully. Please check your email for login details.',
         })
-        router.push('/admin/login')
+        router.push('/login')
     } else {
         throw new Error(response.message || 'Signup failed')
     }
@@ -195,7 +195,7 @@ onMounted(() => {
 
       <div class="card-footer">
         <div class="signup-prompt">
-            Already have an account? <router-link to="/admin/login">Sign In</router-link>
+            Already have an account? <router-link to="/login">Sign In</router-link>
         </div>
       </div>
     </div>
