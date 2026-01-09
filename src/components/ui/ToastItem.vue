@@ -37,170 +37,82 @@ const iconComponent = computed(() => {
   }
 });
 
-const toastClasses = computed(() => {
+const toastTypeClasses = computed(() => {
   switch (props.toast.type) {
-    case 'success':
-      return 'toast-success';
-    case 'error':
-      return 'toast-error';
-    case 'warning':
-      return 'toast-warning';
-    case 'info':
-      return 'toast-info';
-    default:
-      return 'toast-info';
+    case 'success': return 'border-l-4 border-green-500';
+    case 'error':   return 'border-l-4 border-red-500';
+    case 'warning': return 'border-l-4 border-amber-500';
+    case 'info':    return 'border-l-4 border-blue-500';
+    default:        return 'border-l-4 border-blue-500';
   }
 });
+
+const iconColorClass = computed(() => {
+    switch (props.toast.type) {
+    case 'success': return 'text-green-500 dark:text-green-400';
+    case 'error':   return 'text-red-500 dark:text-red-400';
+    case 'warning': return 'text-amber-500 dark:text-amber-400';
+    case 'info':    return 'text-blue-500 dark:text-blue-400';
+    default:        return 'text-blue-500 dark:text-blue-400';
+  }
+})
+
+const progressBarColorClass = computed(() => {
+    switch (props.toast.type) {
+    case 'success': return 'bg-green-500';
+    case 'error':   return 'bg-red-500';
+    case 'warning': return 'bg-amber-500';
+    case 'info':    return 'bg-blue-500';
+    default:        return 'bg-blue-500';
+  }
+})
 </script>
 
 <template>
   <div
-    class="toast-item"
-    :class="[toastClasses, { 'is-visible': isVisible }]"
+    class="pointer-events-auto w-full max-w-sm overflow-hidden rounded-lg bg-white shadow-lg ring-1 ring-black/5 transition-all duration-300 dark:bg-slate-800 dark:ring-white/10 mb-3"
+    :class="[
+        isVisible ? 'translate-x-0 opacity-100' : 'translate-x-full opacity-0',
+        toastTypeClasses
+    ]"
     role="alert"
   >
-    <div class="toast-icon-wrapper">
-      <component :is="iconComponent" class="toast-icon" />
+    <div class="p-4">
+      <div class="flex items-start">
+        <div class="flex-shrink-0">
+          <component :is="iconComponent" class="h-6 w-6" :class="iconColorClass" aria-hidden="true" />
+        </div>
+        <div class="ml-3 w-0 flex-1 pt-0.5">
+          <p class="text-sm font-medium text-slate-900 dark:text-slate-100" v-if="toast.title">{{ toast.title }}</p>
+          <p class="mt-1 text-sm text-slate-500 dark:text-slate-400 leading-relaxed">{{ toast.message }}</p>
+        </div>
+        <div class="ml-4 flex flex-shrink-0">
+          <button
+            type="button"
+            @click="removeToast"
+            class="inline-flex rounded-md bg-white text-slate-400 hover:text-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:bg-slate-800 dark:text-slate-500 dark:hover:text-slate-400"
+          >
+            <span class="sr-only">Close</span>
+            <X class="h-5 w-5" aria-hidden="true" />
+          </button>
+        </div>
+      </div>
     </div>
 
-    <div class="toast-content">
-      <h3 v-if="toast.title" class="toast-title">{{ toast.title }}</h3>
-      <p class="toast-message">{{ toast.message }}</p>
+    <!-- Progress bar -->
+    <div v-if="toast.duration !== 0" class="h-1 w-full bg-slate-100 dark:bg-slate-700">
+        <div
+            class="h-full origin-left animate-[progress_linear_forwards]"
+            :class="progressBarColorClass"
+            :style="{ animationDuration: `${toast.duration}ms` }"
+        ></div>
     </div>
-
-    <button @click="removeToast" class="toast-close" aria-label="Close">
-      <X class="w-4 h-4" />
-    </button>
-
-    <!-- Progress bar for auto-dismiss -->
-    <div
-      v-if="toast.duration !== 0"
-      class="toast-progress"
-      :style="{ animationDuration: `${toast.duration}ms` }"
-    ></div>
   </div>
 </template>
 
 <style scoped>
-.toast-item {
-  position: relative;
-  display: flex;
-  align-items: flex-start;
-  width: 100%;
-  max-width: 400px;
-  background: var(--color-background, #ffffff);
-  border-radius: 12px;
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-  padding: 16px;
-  margin-bottom: 12px;
-  overflow: hidden;
-  transform: translateX(100%);
-  opacity: 0;
-  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  pointer-events: auto;
-  border: 1px solid rgba(0,0,0,0.05);
-}
-
-/* Dark mode fallback if variables not present, but trying to use variables */
-@media (prefers-color-scheme: dark) {
-  .toast-item {
-    background: #1e1e1e;
-    border-color: rgba(255,255,255,0.1);
-    color: #fff;
-  }
-}
-
-.toast-item.is-visible {
-  transform: translateX(0);
-  opacity: 1;
-}
-
-.toast-icon-wrapper {
-  flex-shrink: 0;
-  margin-right: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 24px;
-  height: 24px;
-}
-
-.toast-icon {
-  width: 20px;
-  height: 20px;
-}
-
-.toast-content {
-  flex: 1;
-  margin-right: 12px;
-}
-
-.toast-title {
-  font-weight: 600;
-  font-size: 0.95rem;
-  margin-bottom: 2px;
-  color: #111827; /* Gray 900 */
-}
-
-.toast-message {
-  font-size: 0.875rem;
-  color: #374151; /* Gray 700 */
-  opacity: 0.9;
-  line-height: 1.4;
-}
-
-.toast-close {
-  flex-shrink: 0;
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  opacity: 0.6;
-  transition: opacity 0.2s;
-  padding: 4px;
-  border-radius: 4px;
-  color: inherit;
-}
-
-.toast-close:hover {
-  opacity: 1;
-  background: rgba(0,0,0,0.05);
-}
-
-.toast-progress {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  height: 3px;
-  background: currentColor;
-  opacity: 0.3;
-  width: 100%;
-  transform-origin: left;
-  animation: progress linear forwards;
-}
-
 @keyframes progress {
   from { transform: scaleX(1); }
   to { transform: scaleX(0); }
 }
-
-/* Type variations */
-.toast-success {
-  border-left: 4px solid #10b981;
-}
-.toast-success .toast-icon { color: #10b981; }
-
-.toast-error {
-  border-left: 4px solid #ef4444;
-}
-.toast-error .toast-icon { color: #ef4444; }
-
-.toast-warning {
-  border-left: 4px solid #f59e0b;
-}
-.toast-warning .toast-icon { color: #f59e0b; }
-
-.toast-info {
-  border-left: 4px solid #3b82f6;
-}
-.toast-info .toast-icon { color: #3b82f6; }
 </style>

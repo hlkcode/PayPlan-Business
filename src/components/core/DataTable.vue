@@ -181,7 +181,7 @@ const changePage = (page: number) => {
   fetchData()
 }
 
-watch([pageSize], () => {
+watch([pageSize, () => props.apiUrl], () => {
   currentPage.value = 1
   fetchData()
 })

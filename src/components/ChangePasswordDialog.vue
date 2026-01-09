@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import BaseDialog from '@/components/core/dialog/BaseDialog.vue'
-import { managementService } from '@/services/management/ManagementAccountService'
+import { businessService } from '@/services/business/BusinessAccountService'
 import { useToastStore } from '@/stores/toast'
 
 defineProps<{
@@ -37,7 +37,7 @@ const onSubmit = async () => {
             confirmNewPassword: form.value.confirmPassword
         }
 
-        const response = await managementService.changePassword(payload)
+        const response = await businessService.changePassword(payload)
 
         if (response.isSuccess) {
             toast.add({

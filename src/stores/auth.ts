@@ -6,12 +6,12 @@ interface User {
   id: number
   email: string
   role?: string
-  accountType?: 'management' | 'business' | 'personal'
+  accountType?: 'business'
 }
 
 interface LoginInput {
-  email: string;
-  password: string;
+  email: string
+  password: string
 }
 
 export const useAuthStore = defineStore('auth', () => {
@@ -22,12 +22,12 @@ export const useAuthStore = defineStore('auth', () => {
   const setToken = (newToken: string, newRefreshToken?: string) => {
     token.value = newToken
     localStorage.setItem('token', newToken)
-    
+
     if (newRefreshToken) {
-         refreshToken.value = newRefreshToken
-         localStorage.setItem('refreshToken', newRefreshToken)
+      refreshToken.value = newRefreshToken
+      localStorage.setItem('refreshToken', newRefreshToken)
     }
-    
+
     axios.defaults.headers.common['Authorization'] = `Bearer ${newToken}`
   }
 
@@ -47,59 +47,59 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   const login = async (credentials: LoginInput) => {
-    // Strictly management login
-    const endpoint = '/management-accounts/login';
+    // Strictly business login
+    const endpoint = '/business-accounts/login'
 
     const response = await axios.post(endpoint, credentials)
     const responseData = response.data
     // Structure: { isSuccess: true, data: { token: '...', refreshToken: '...', user: {} } }
-    
+
     const authToken = responseData.data?.token || responseData.token
     const newRefreshToken = responseData.data?.refreshToken
     const userData = responseData.data?.user || responseData.user
 
     if (authToken) {
-        setToken(authToken, newRefreshToken)
+      setToken(authToken, newRefreshToken)
     }
     if (userData) {
-        userData.accountType = 'management'
-        setUser(userData)
+      userData.accountType = 'business'
+      setUser(userData)
     }
     return response
   }
-  
+
   const refreshAccessToken = async () => {
-      if (!refreshToken.value || !user.value?.id) throw new Error('No refresh token or user ID')
-      try {
-          // Endpoint: /api/v1/management-accounts/refresh-token
-          // Based on user request, payload requires refreshToken and userId
-           const response = await axios.post('/management-accounts/refresh-token', {
-              refreshToken: refreshToken.value,
-              userId: user.value.id
-          })
-          const responseData = response.data
-          
-          if (responseData.isSuccess && responseData.data) {
-              const { token: newToken, refreshToken: newRefToken, user: updatedUser } = responseData.data
-              
-              if (newToken) {
-                  setToken(newToken, newRefToken)
-                  
-                  // Update user if returned (API sample showed user object in data)
-                  if (updatedUser) {
-                      updatedUser.accountType = user.value.accountType || 'management' // Preserve type
-                      setUser(updatedUser)
-                  }
-                  
-                  return newToken
-              }
+    if (!refreshToken.value || !user.value?.id) throw new Error('No refresh token or user ID')
+    try {
+      // Endpoint: /api/v1/business-accounts/refresh-token
+      // Based on user request, payload requires refreshToken and userId
+      const response = await axios.post('/business-accounts/refresh-token', {
+        refreshToken: refreshToken.value,
+        userId: user.value.id,
+      })
+      const responseData = response.data
+
+      if (responseData.isSuccess && responseData.data) {
+        const { token: newToken, refreshToken: newRefToken, user: updatedUser } = responseData.data
+
+        if (newToken) {
+          setToken(newToken, newRefToken)
+
+          // Update user if returned (API sample showed user object in data)
+          if (updatedUser) {
+            updatedUser.accountType = user.value.accountType || 'business' // Preserve type
+            setUser(updatedUser)
           }
-          
-          throw new Error('Refresh failed or no token returned')
-      } catch (error) {
-          logout()
-          throw error
+
+          return newToken
+        }
       }
+
+      throw new Error('Refresh failed or no token returned')
+    } catch (error) {
+      logout()
+      throw error
+    }
   }
 
   // Initialize axios header if token exists
@@ -115,6 +115,6 @@ export const useAuthStore = defineStore('auth', () => {
     setUser,
     logout,
     login,
-    refreshAccessToken
+    refreshAccessToken,
   }
 })

@@ -3,20 +3,21 @@ import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useToastStore } from '@/stores/toast'
 import { useAuthStore } from '@/stores/auth'
-import { managementService } from '@/services/management/ManagementAccountService'
+import { businessService } from '@/services/business/BusinessAccountService'
 import { countryService } from '@/services/CountryService'
 
-import BaseInput from '@/components/core/form/BaseInput.vue'
-import { Mail, User, Phone, MapPin } from 'lucide-vue-next'
+import { Mail, Phone, MapPin, Building, FileText, Lock } from 'lucide-vue-next'
 
 const router = useRouter()
 const toast = useToastStore()
 const authStore = useAuthStore()
 
 const email = ref('')
-const surname = ref('')
-const otherNames = ref('')
+const companyName = ref('')
+const tin = ref('')
 const phoneNumber = ref('')
+const address = ref('')
+const password = ref('')
 const selectedCountryId = ref<number | null>(null)
 
 const countries = ref<{id: number, name: string}[]>([])
@@ -24,14 +25,9 @@ const isLoading = ref(false)
 const isCountriesLoading = ref(false)
 const errorMsg = ref('')
 
-// Hardcoded role as per requirement
-const ROLE = 'MANAGER'
-
 const fetchCountries = async () => {
     isCountriesLoading.value = true
     try {
-        // Fetch all supported countries without pagination if possible, or large page size
-        // Assuming getAll supports standard params, let's request a large page size to get all
         const response = await countryService.getAll({ pageNumber: 1, pageSize: 100 })
         if (response.isSuccess) {
             countries.value = response.data.items
@@ -55,22 +51,23 @@ const handleSignup = async () => {
   try {
     const payload = {
         email: email.value,
-        surname: surname.value,
-        otherNames: otherNames.value,
+        companyName: companyName.value,
+        tin: tin.value,
         phoneNumber: phoneNumber.value,
+        address: address.value,
         countryId: selectedCountryId.value,
-        role: ROLE
+        password: password.value
     }
 
-    const response = await managementService.create(payload)
+    const response = await businessService.create(payload)
 
     if (response.isSuccess) {
         toast.add({
             type: 'success',
             title: 'Account Created',
-            message: 'Your account has been created successfully. Please check your email for login details.',
+            message: 'Account created. Please verify your phone number.',
         })
-        router.push('/login')
+        router.push({ path: '/verify-otp', query: { phone: phoneNumber.value } })
     } else {
         throw new Error(response.message || 'Signup failed')
     }
@@ -106,336 +103,149 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="login-container">
-    <div class="background-shapes">
-      <div class="shape shape-1"></div>
-      <div class="shape shape-2"></div>
-      <div class="shape shape-3"></div>
+  <div class="min-h-screen flex items-center justify-center relative bg-slate-50 overflow-hidden font-sans py-12 px-4 sm:px-6 lg:px-8">
+    <div class="absolute inset-0 z-0 h-full w-full">
+        <div class="absolute w-96 h-96 bg-indigo-500 rounded-full blur-[80px] opacity-40 top-10 left-10 animate-pulse"></div>
+        <div class="absolute w-80 h-80 bg-purple-500 rounded-full blur-[80px] opacity-40 bottom-10 right-10 animate-pulse delay-700"></div>
     </div>
 
-    <div class="login-card glass">
-      <div class="brand-header">
-        <h1 class="brand-title">PayPlan</h1>
-        <p class="brand-subtitle">Create your management account.</p>
+    <div class="relative z-10 w-full max-w-xl p-8 sm:p-10 bg-white/90 backdrop-blur-xl border border-white/20 rounded-3xl shadow-2xl">
+      <div class="text-center mb-8">
+        <h1 class="text-3xl sm:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600 mb-2 tracking-tight">
+            PayPlan Business
+        </h1>
+        <p class="text-slate-500 text-sm sm:text-base">Create your business account to get started.</p>
       </div>
 
-      <form @submit.prevent="handleSignup" class="login-form">
-        <!-- Name Fields -->
-        <div class="form-row">
-            <div class="form-group half">
-                <BaseInput
-                    id="surname"
-                    v-model="surname"
-                    placeholder="Doe"
-                    label="Surname"
-                    required
-                    :icon="User"
-                />
-            </div>
-            <div class="form-group half">
-                 <BaseInput
-                    id="otherNames"
-                    v-model="otherNames"
-                    placeholder="John"
-                    label="Other Names"
-                    required
-                    :icon="User"
-                />
-            </div>
-        </div>
+      <form @submit.prevent="handleSignup" class="flex flex-col gap-5">
 
-        <div class="form-group">
-          <BaseInput
-            id="email"
-            v-model="email"
-            placeholder="name@example.com"
-            label="Email Address"
-            type="email"
-            required
-            :icon="Mail"
-          />
-        </div>
-
-        <div class="form-group">
-            <BaseInput
-                id="phone"
-                v-model="phoneNumber"
-                placeholder="+1234567890"
-                label="Phone Number"
-                type="tel"
-                required
-                :icon="Phone"
-            />
-        </div>
-
-         <div class="form-group">
-            <label for="country">Country</label>
-            <div class="input-wrapper">
-                 <div class="input-icon">
-                    <MapPin :size="18" />
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+             <div class="space-y-1.5">
+                <label for="companyName" class="block text-xs font-semibold text-slate-700 ml-1 uppercase tracking-wide">Company Name</label>
+                <div class="relative flex items-center">
+                    <Building class="absolute left-4 text-slate-400 pointer-events-none z-10" :size="18" />
+                    <input
+                        id="companyName"
+                        v-model="companyName"
+                        placeholder="Acme Corp"
+                        required
+                        class="w-full pl-11 pr-4 py-3 bg-white border border-slate-200 rounded-xl text-slate-900 text-sm transition-all duration-300 outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 placeholder:text-slate-400 hover:border-indigo-300"
+                    />
                 </div>
-                <select id="country" v-model="selectedCountryId" class="premium-input with-icon" required :disabled="isCountriesLoading">
-                    <option :value="null" disabled>Select Country</option>
-                    <option v-for="country in countries" :key="country.id" :value="country.id">
-                        {{ country.name }}
-                    </option>
-                </select>
             </div>
-         </div>
 
-        <div v-if="errorMsg" class="error-message">
+            <div class="space-y-1.5">
+                 <label for="tin" class="block text-xs font-semibold text-slate-700 ml-1 uppercase tracking-wide">TIN</label>
+                 <div class="relative flex items-center">
+                    <FileText class="absolute left-4 text-slate-400 pointer-events-none z-10" :size="18" />
+                    <input
+                        id="tin"
+                        v-model="tin"
+                        placeholder="Tax ID Number"
+                        class="w-full pl-11 pr-4 py-3 bg-white border border-slate-200 rounded-xl text-slate-900 text-sm transition-all duration-300 outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 placeholder:text-slate-400 hover:border-indigo-300"
+                    />
+                </div>
+            </div>
+        </div>
+
+        <div class="space-y-1.5">
+          <label for="email" class="block text-xs font-semibold text-slate-700 ml-1 uppercase tracking-wide">Email Address</label>
+          <div class="relative flex items-center">
+             <Mail class="absolute left-4 text-slate-400 pointer-events-none z-10" :size="18" />
+             <input
+                id="email"
+                v-model="email"
+                placeholder="name@company.com"
+                type="email"
+                required
+                class="w-full pl-11 pr-4 py-3 bg-white border border-slate-200 rounded-xl text-slate-900 text-sm transition-all duration-300 outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 placeholder:text-slate-400 hover:border-indigo-300"
+             />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+            <div class="space-y-1.5">
+                <label for="phone" class="block text-xs font-semibold text-slate-700 ml-1 uppercase tracking-wide">Phone Number</label>
+                <div class="relative flex items-center">
+                    <Phone class="absolute left-4 text-slate-400 pointer-events-none z-10" :size="18" />
+                    <input
+                        id="phone"
+                        v-model="phoneNumber"
+                        placeholder="+1234567890"
+                        type="tel"
+                        required
+                        class="w-full pl-11 pr-4 py-3 bg-white border border-slate-200 rounded-xl text-slate-900 text-sm transition-all duration-300 outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 placeholder:text-slate-400 hover:border-indigo-300"
+                    />
+                </div>
+            </div>
+
+            <div class="space-y-1.5">
+                <label for="country" class="block text-xs font-semibold text-slate-700 ml-1 uppercase tracking-wide">Country</label>
+                 <div class="relative flex items-center">
+                    <MapPin class="absolute left-4 text-slate-400 pointer-events-none z-10" :size="18" />
+                    <select
+                        id="country"
+                        v-model="selectedCountryId"
+                        required
+                        :disabled="isCountriesLoading"
+                        class="w-full pl-11 pr-8 py-3 bg-white border border-slate-200 rounded-xl text-slate-900 text-sm transition-all duration-300 outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 appearance-none hover:border-indigo-300 disabled:bg-slate-50"
+                    >
+                        <option :value="null" disabled>Select Country</option>
+                         <option v-for="country in countries" :key="country.id" :value="country.id">
+                            {{ country.name }}
+                        </option>
+                    </select>
+                     <div class="absolute right-3 pointer-events-none text-slate-400">
+                        <svg class="w-4 h-4 fill-current" viewBox="0 0 20 20"><path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/></svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="space-y-1.5">
+           <label for="address" class="block text-xs font-semibold text-slate-700 ml-1 uppercase tracking-wide">Address</label>
+           <div class="relative flex items-start">
+                <MapPin class="absolute left-4 top-3.5 text-slate-400 pointer-events-none z-10" :size="18" />
+                <textarea
+                    id="address"
+                    v-model="address"
+                    rows="2"
+                    placeholder="Headquarters Address"
+                    class="w-full pl-11 pr-4 py-3 bg-white border border-slate-200 rounded-xl text-slate-900 text-sm transition-all duration-300 outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 placeholder:text-slate-400 hover:border-indigo-300 resize-none"
+                ></textarea>
+           </div>
+        </div>
+
+        <div class="space-y-1.5">
+           <label for="password" class="block text-xs font-semibold text-slate-700 ml-1 uppercase tracking-wide">Password</label>
+           <div class="relative flex items-center">
+             <Lock class="absolute left-4 text-slate-400 pointer-events-none z-10" :size="18" />
+             <input
+                id="password"
+                v-model="password"
+                placeholder="••••••••"
+                type="password"
+                required
+                class="w-full pl-11 pr-4 py-3 bg-white border border-slate-200 rounded-xl text-slate-900 text-sm transition-all duration-300 outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 placeholder:text-slate-400 hover:border-indigo-300"
+              />
+           </div>
+        </div>
+
+        <div v-if="errorMsg" class="p-3 bg-red-50 border border-red-100 rounded-lg text-red-500 text-sm text-center">
           {{ errorMsg }}
         </div>
 
-        <button type="submit" class="submit-btn" :disabled="isLoading">
+        <button type="submit" class="w-full py-3.5 mt-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl transition-all duration-300 transform hover:-translate-y-0.5 shadow-lg shadow-indigo-600/20 disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none flex justify-center items-center" :disabled="isLoading">
           <span v-if="!isLoading">Create Account</span>
-          <span v-else class="loader"></span>
+          <span v-else class="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
         </button>
       </form>
 
-      <div class="card-footer">
-        <div class="signup-prompt">
-            Already have an account? <router-link to="/login">Sign In</router-link>
+      <div class="mt-6 text-center">
+        <div class="text-sm text-slate-500">
+            Already have an account? <router-link to="/login" class="text-indigo-600 hover:text-indigo-700 font-semibold transition-colors">Sign In</router-link>
         </div>
       </div>
     </div>
   </div>
 </template>
-
-<style scoped>
-/* Container & Background */
-.login-container {
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  background-color: var(--color-bg-primary);
-  overflow: hidden;
-  font-family: var(--font-family-base, 'Inter', sans-serif);
-}
-
-.background-shapes .shape {
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(80px);
-  z-index: 0;
-  animation: float 10s infinite ease-in-out;
-  opacity: 0.5;
-}
-
-.shape-1 {
-  width: 400px;
-  height: 400px;
-  background: var(--color-primary, #6366f1);
-  top: -10%;
-  left: -10%;
-  animation-delay: 0s;
-}
-
-.shape-2 {
-  width: 300px;
-  height: 300px;
-  background: #ec4899;
-  bottom: -5%;
-  right: -5%;
-  animation-delay: 2s;
-}
-
-.shape-3 {
-  width: 200px;
-  height: 200px;
-  background: #8b5cf6;
-  top: 40%;
-  left: 60%;
-  animation-delay: 4s;
-}
-
-@keyframes float {
-  0%, 100% { transform: translate(0, 0); }
-  50% { transform: translate(20px, -20px); }
-}
-
-/* Glass Card */
-.login-card {
-  position: relative;
-  z-index: 10;
-  width: 100%;
-  max-width: 520px;
-  padding: 3rem 2.5rem;
-  background: var(--color-bg-card);
-  backdrop-filter: blur(12px);
-  border: 1px solid var(--color-border);
-  border-radius: 24px;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1);
-  color: var(--color-text-primary);
-}
-
-/* Typography */
-.brand-header {
-  text-align: center;
-  margin-bottom: 2rem;
-}
-
-.brand-title {
-  font-size: 2.5rem;
-  font-weight: 800;
-  background: linear-gradient(135deg, #818cf8 0%, #c4b5fd 100%);
-  background-clip: text;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  margin: 0;
-  letter-spacing: -1px;
-}
-
-.brand-subtitle {
-  color: #94a3b8;
-  font-size: 0.95rem;
-  margin-top: 0.5rem;
-}
-
-/* Form Styles */
-.form-form {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-}
-
-.form-group {
-  margin-bottom: 1.25rem;
-}
-
-.form-row {
-    display: flex;
-    gap: 1rem;
-}
-
-.form-group.half {
-    flex: 1;
-}
-
-.form-group label {
-  display: block;
-  margin-bottom: 0.5rem;
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: var(--color-text-primary);
-  margin-left: 0.25rem;
-}
-
-.input-wrapper {
-  position: relative;
-  display: flex;
-  align-items: center;
-}
-
-.input-icon {
-  position: absolute;
-  left: 1rem;
-  color: var(--color-text-secondary);
-  pointer-events: none;
-  z-index: 1;
-}
-
-.premium-input {
-  width: 100%;
-  padding: 0.875rem 1rem;
-  background: var(--color-bg-input);
-  border: 1px solid var(--color-border-input);
-  border-radius: 12px;
-  color: var(--color-text-primary);
-  font-size: 1rem;
-  transition: all 0.3s ease;
-  outline: none;
-  appearance: none; /* for select */
-}
-
-.premium-input.with-icon {
-  padding-left: 3rem;
-}
-
-.premium-input:focus {
-  border-color: var(--color-primary);
-  box-shadow: 0 0 0 2px var(--color-primary-light);
-  background: var(--color-bg-input);
-}
-
-/* Button */
-.submit-btn {
-  width: 100%;
-  padding: 1rem;
-  margin-top: 1rem;
-  background: var(--color-primary, #6366f1);
-  border: none;
-  border-radius: 12px;
-  color: white;
-  font-weight: 600;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  position: relative;
-  overflow: hidden;
-}
-
-.submit-btn:hover {
-  background: #4f46e5;
-  transform: translateY(-2px);
-  box-shadow: 0 10px 20px -10px rgba(99, 102, 241, 0.5);
-}
-
-.submit-btn:disabled {
-  opacity: 0.7;
-  cursor: not-allowed;
-  transform: none;
-}
-
-/* footer */
-.card-footer {
-  margin-top: 2rem;
-  text-align: center;
-}
-
-.signup-prompt {
-    color: #94a3b8;
-    font-size: 0.9rem;
-}
-
-.signup-prompt a {
-    color: #818cf8;
-    text-decoration: none;
-    font-weight: 600;
-}
-
-.signup-prompt a:hover {
-    text-decoration: underline;
-}
-
-.error-message {
-  color: #ef4444;
-  font-size: 0.875rem;
-  margin-bottom: 1rem;
-  text-align: center;
-  padding: 0.75rem;
-  background: rgba(239, 68, 68, 0.1);
-  border: 1px solid rgba(239, 68, 68, 0.2);
-  border-radius: 8px;
-}
-
-/* Loader */
-.loader {
-  width: 20px;
-  height: 20px;
-  border: 2px solid #fff;
-  border-bottom-color: transparent;
-  border-radius: 50%;
-  display: inline-block;
-  box-sizing: border-box;
-  animation: rotation 1s linear infinite;
-  vertical-align: middle;
-}
-
-@keyframes rotation {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-</style>

@@ -6,18 +6,18 @@ import {
     Sun,
     Moon,
     LayoutDashboard,
-    User,
-    Briefcase,
-    ShieldCheck,
     PanelLeftClose,
     PanelLeftOpen,
-    Users,
-    Globe,
+    Mail,
+    ArrowLeftRight,
     FileText,
-    Files,
-    Building,
-    Inbox
+    User
 } from 'lucide-vue-next'
+import { useRouter } from 'vue-router'
+import { useCompanyStore } from '@/stores/company'
+
+const router = useRouter()
+const companyStore = useCompanyStore()
 
 const { isDark, toggleTheme } = useTheme()
 const isCollapsed = ref(false)
@@ -32,7 +32,7 @@ const toggleSidebar = () => {
     <aside class="sidebar" :class="{ 'collapsed': isCollapsed }">
       <div class="sidebar-header">
           <div class="logo">
-              <span v-if="!isCollapsed">PayPlan</span>
+              <span v-if="!isCollapsed">{{ companyStore.currentCompany?.name || 'PayPlan' }}</span>
               <span v-else>P</span>
           </div>
           <button @click="toggleSidebar" class="collapse-btn">
@@ -47,66 +47,36 @@ const toggleSidebar = () => {
             <span v-if="!isCollapsed">Dashboard</span>
         </router-link>
 
-        <router-link to="/companies" class="nav-item" active-class="active" :title="isCollapsed ? 'Companies' : ''">
-             <Building :size="20" />
-            <span v-if="!isCollapsed">Companies</span>
+
+         <router-link to="/invites" class="nav-item" active-class="active" :title="isCollapsed ? 'Invites' : ''">
+            <Mail :size="20" />
+            <span v-if="!isCollapsed">Invites</span>
         </router-link>
 
-         <router-link to="/requests" class="nav-item" active-class="active" :title="isCollapsed ? 'Requests' : ''">
-            <Inbox :size="20" />
-            <span v-if="!isCollapsed">Requests</span>
-        </router-link>
-
-        <div class="nav-section-label" v-if="!isCollapsed">ACCOUNTS</div>
-        <div class="nav-separator" v-else></div>
-
-        <router-link to="/accounts/personal" class="nav-item" active-class="active" :title="isCollapsed ? 'Personal Accounts' : ''">
-            <User :size="20" />
-            <span v-if="!isCollapsed">Personal</span>
-        </router-link>
-
-        <router-link to="/accounts/business" class="nav-item" active-class="active" :title="isCollapsed ? 'Business Accounts' : ''">
-            <Briefcase :size="20" />
-            <span v-if="!isCollapsed">Business</span>
-        </router-link>
-
-        <router-link to="/accounts/management" class="nav-item" active-class="active" :title="isCollapsed ? 'Management Accounts' : ''">
-            <ShieldCheck :size="20" />
-            <span v-if="!isCollapsed">Management</span>
-        </router-link>
-
-
-
-        <div class="nav-section-label" v-if="!isCollapsed">SETTINGS</div>
-        <div class="nav-separator" v-else></div>
-
-
-
-        <router-link to="/settings/roles" class="nav-item" active-class="active" :title="isCollapsed ? 'Roles' : ''">
-             <Users :size="20" />
-            <span v-if="!isCollapsed">Roles</span>
-        </router-link>
-
-        <router-link to="/countries" class="nav-item" active-class="active" :title="isCollapsed ? 'Countries' : ''">
-            <Globe :size="20" />
-            <span v-if="!isCollapsed">Countries</span>
-        </router-link>
-
-         <router-link to="/settings/document-types" class="nav-item" active-class="active" :title="isCollapsed ? 'Document Types' : ''">
+         <router-link to="/documents" class="nav-item" active-class="active" :title="isCollapsed ? 'Documents' : ''">
             <FileText :size="20" />
-            <span v-if="!isCollapsed">Doc Types</span>
+            <span v-if="!isCollapsed">Documents</span>
         </router-link>
 
-        <router-link to="/settings/country-documents" class="nav-item" active-class="active" :title="isCollapsed ? 'Country Documents' : ''">
-            <Files :size="20" />
-            <span v-if="!isCollapsed">Country Docs</span>
+         <router-link to="/users" class="nav-item" active-class="active" :title="isCollapsed ? 'Team' : ''">
+            <User :size="20" />
+            <span v-if="!isCollapsed">Team</span>
         </router-link>
+
+
+
+        <div class="nav-separator"></div>
+
+        <button @click="router.push('/select-company')" class="nav-item" :title="isCollapsed ? 'Switch Business' : ''">
+            <ArrowLeftRight :size="20" />
+            <span v-if="!isCollapsed">Switch Business</span>
+        </button>
       </nav>
     </aside>
 
     <main class="content">
       <header class="top-bar">
-        <h2>Portal</h2>
+        <h2>{{ companyStore.currentCompany?.name }} Portal</h2>
         <div class="header-actions">
            <div class="action-items">
                <button @click="toggleTheme" class="icon-btn theme-toggle">

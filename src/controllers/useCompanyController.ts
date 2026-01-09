@@ -5,11 +5,13 @@ import type { PaginationDto } from '@/models/common'
 import { commonService } from '@/services/CommonService'
 import type { Country } from '@/models/common'
 
+import { useAuthStore } from '@/stores/auth'
+
 export function useCompanyController() {
+  const authStore = useAuthStore()
   const loading = ref(false)
   const companies = ref<Company[]>([])
   const totalRecords = ref(0)
-
   // For editing
   const showEditDialog = ref(false)
   const editLoading = ref(false)
@@ -25,9 +27,10 @@ export function useCompanyController() {
   const countries = ref<Country[]>([])
 
   const fetchCompanies = async (params: PaginationDto) => {
+    if (!authStore.user?.id) return
     loading.value = true
     try {
-      const response = await companyService.getAll(params)
+      const response = await companyService.getUserCompanies(authStore.user.id, params)
       if (response.isSuccess) {
         companies.value = response.data.items
         totalRecords.value = response.data.totalCount

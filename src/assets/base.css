@@ -1,85 +1,49 @@
-/* Base Variables */
-:root {
-  /* Typography */
-  --font-family-base: 'Urbanist', sans-serif;
+@import 'tailwindcss';
 
-  /* Light Theme Colors */
-  --color-bg-primary: #ffffff;
-  --color-bg-secondary: #f9fafb; /* Lighter secondary for flat feel */
-  --color-bg-card: #ffffff;
-  --color-bg-input: #f9fafb;
+/* PayPlan Business Theme */
+:root {
+  --color-bg-primary: #f8fafc;
+  --color-bg-secondary: #ffffff;
+  --color-bg-card: rgba(255, 255, 255, 0.8);
+  --color-bg-input: #ffffff;
 
   --color-text-primary: #0f172a;
   --color-text-secondary: #64748b;
   --color-text-muted: #94a3b8;
-  --color-text-inverted: #ffffff;
 
-  --color-border: #e2e8f0; /* Crisp border */
+  --color-primary: #6366f1;
+  --color-primary-hover: #4f46e5;
+  --color-primary-light: rgba(99, 102, 241, 0.1);
+
+  --color-border: #e2e8f0;
   --color-border-input: #cbd5e1;
 
-  --color-primary: #4f46e5;
-  --color-primary-hover: #4338ca;
-  --color-primary-light: #eef2ff;
-  
-  --color-danger: #ef4444;
-  --color-danger-bg: #fee2e2;
-
-  --color-success: #10b981;
-  
-  /* Flat Design: No Shadows */
-  --shadow-card: none;
-  --shadow-lg: none;
+  --font-family-base:
+    'Urbanist', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu,
+    Cantarell, 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
 }
 
-/* Dark Theme Colors */
-.dark {
-  --color-bg-primary: #020617; /* Very dark slate */
-  --color-bg-secondary: #0f172a;
-  --color-bg-card: #1e293b;
-  --color-bg-input: #0f172a;
+:root.dark {
+  --color-bg-primary: #0f172a;
+  --color-bg-secondary: #1e293b;
+  --color-bg-card: rgba(30, 41, 59, 0.8);
+  --color-bg-input: #334155;
 
   --color-text-primary: #f8fafc;
   --color-text-secondary: #94a3b8;
   --color-text-muted: #64748b;
-  --color-text-inverted: #020617;
+
+  --color-primary: #818cf8;
+  --color-primary-hover: #6366f1;
+  --color-primary-light: rgba(99, 102, 241, 0.2);
 
   --color-border: #334155;
-  --color-border-input: #334155;
-
-  --color-primary: #6366f1;
-  --color-primary-hover: #818cf8;
-  --color-primary-light: rgba(99, 102, 241, 0.1);
-
-  --color-danger: #f87171;
-  --color-danger-bg: rgba(248, 113, 113, 0.1);
-
-  --shadow-card: none;
-  --shadow-lg: none;
+  --color-border-input: #475569;
 }
 
 body {
   margin: 0;
   font-family: var(--font-family-base);
-  background-color: var(--color-bg-secondary);
+  background-color: var(--color-bg-primary);
   color: var(--color-text-primary);
-  transition: background-color 0.3s, color 0.3s;
-}
-
-/* Common Utilities */
-.glass {
-    /* Flat Design - Solid background instead of glass */
-    background: var(--color-bg-card);
-    border: 1px solid var(--color-border);
-}
-.dark .glass {
-    background: var(--color-bg-card);
-    border-color: var(--color-border);
-}
-
-input {
-    font-family: var(--font-family-base);
-}
-
-button {
-    font-family: var(--font-family-base);
 }

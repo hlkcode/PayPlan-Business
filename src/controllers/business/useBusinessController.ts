@@ -1,38 +1,36 @@
 import { ref } from 'vue'
-import { managementService } from '@/services/management/ManagementAccountService'
-import type { ManagementAccount, CreateManagementAccountInput } from '@/models/account'
+import { businessService } from '@/services/business/BusinessAccountService'
+import type { BusinessAccount, CreateBusinessAccountInput } from '@/models/account'
 import type { PaginationDto } from '@/models/common'
-
 import { commonService } from '@/services/CommonService'
 import type { Country } from '@/models/common'
 
-export function useManagementController() {
+export function useBusinessController() {
   const loading = ref(false)
-  const accounts = ref<ManagementAccount[]>([])
+  const accounts = ref<BusinessAccount[]>([])
   const totalRecords = ref(0)
-  const roles = ref<string[]>([])
   const countries = ref<Country[]>([])
-
-  // Reset Password State
-  const showResetDialog = ref(false)
-  const resetLoading = ref(false)
 
   // Dialog State
   const showCreateDialog = ref(false)
   const createLoading = ref(false)
-  const createForm = ref<CreateManagementAccountInput>({
+  const resetLoading = ref(false)
+
+  // Initialize with empty/default values
+  const createForm = ref<CreateBusinessAccountInput>({
     email: '',
-    role: '',
-    surname: '',
-    otherNames: '',
+    password: '',
+    companyName: '',
+    tin: '',
     phoneNumber: '',
+    address: '',
     countryId: 80, // Default Ghana
   })
 
   const fetchAccounts = async (params: PaginationDto) => {
     loading.value = true
     try {
-      const response = await managementService.getAll(params)
+      const response = await businessService.getAll(params)
       if (response.isSuccess) {
         accounts.value = response.data.items
         totalRecords.value = response.data.totalCount
@@ -44,24 +42,11 @@ export function useManagementController() {
     }
   }
 
-  const fetchRoles = async () => {
-    try {
-      roles.value = ['MANAGER', 'USER']
-    } catch (error) {
-      console.error('Failed to fetch roles', error)
-    }
-  }
-
   const fetchCountries = async () => {
     try {
-      console.log('Controller: fetching countries...')
       const response = await commonService.getCountries()
-      console.log('Controller: countries response', response)
       if (response.isSuccess) {
         countries.value = response.data
-        console.log('Controller: set countries', countries.value)
-      } else {
-        console.warn('Controller: fetch countries failed or success=false', response)
       }
     } catch (error) {
       console.error('Failed to fetch countries', error)
@@ -71,7 +56,7 @@ export function useManagementController() {
   const createAccount = async () => {
     createLoading.value = true
     try {
-      const response = await managementService.create(createForm.value)
+      const response = await businessService.create(createForm.value)
       if (response.isSuccess) {
         showCreateDialog.value = false
         resetForm()
@@ -88,7 +73,7 @@ export function useManagementController() {
 
   const deleteAccount = async (id: number) => {
     try {
-      const response = await managementService.deleteAccount(id)
+      const response = await businessService.deleteAccount(id)
       return { success: response.isSuccess, message: response.message }
     } catch (error) {
       const err = error as Error
@@ -99,7 +84,7 @@ export function useManagementController() {
 
   const toggleActivation = async (id: number, currentStatus: boolean) => {
     try {
-      const response = await managementService.activate(id, !currentStatus)
+      const response = await businessService.activate(id, !currentStatus)
       return { success: response.isSuccess, message: response.message }
     } catch (error) {
       const err = error as Error
@@ -111,7 +96,7 @@ export function useManagementController() {
   const resetPassword = async (userId: number) => {
     resetLoading.value = true
     try {
-      const response = await managementService.resetPassword(userId)
+      const response = await businessService.resetPassword(userId)
       return { success: response.isSuccess, message: response.message }
     } catch (error) {
       const err = error as Error
@@ -125,10 +110,11 @@ export function useManagementController() {
   const resetForm = () => {
     createForm.value = {
       email: '',
-      role: '',
-      surname: '',
-      otherNames: '',
+      password: '',
+      companyName: '',
+      tin: '',
       phoneNumber: '',
+      address: '',
       countryId: 80,
     }
   }
@@ -138,7 +124,6 @@ export function useManagementController() {
     loading,
     accounts,
     totalRecords,
-    roles,
     countries,
 
     // Dialog
@@ -148,13 +133,11 @@ export function useManagementController() {
 
     // Actions
     fetchAccounts,
-    fetchRoles,
     fetchCountries,
     createAccount,
     deleteAccount,
     toggleActivation,
     resetPassword,
-    showResetDialog,
     resetLoading,
   }
 }

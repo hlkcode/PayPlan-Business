@@ -25,7 +25,7 @@ const onConfirmLogout = () => {
 </script>
 
 <template>
-  <BaseDropdown>
+  <BaseDropdown align="right">
     <template #trigger>
         <div class="avatar-trigger">
             <div class="avatar">

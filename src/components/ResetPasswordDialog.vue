@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useManagementController } from '@/controllers/management/useManagementController'
+import { useBusinessController } from '@/controllers/business/useBusinessController'
 import BaseDialog from '@/components/core/dialog/BaseDialog.vue'
 
 const props = defineProps<{
@@ -9,7 +9,7 @@ const props = defineProps<{
 
 const emit = defineEmits(['close', 'success'])
 
-const controller = useManagementController()
+const controller = useBusinessController()
 
 const onConfirm = async () => {
     const result = await controller.resetPassword(props.userId)

@@ -1,27 +1,18 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import DataTable from '@/components/core/DataTable.vue'
-import axios from '@/utils/axios'
-import { AxiosError } from 'axios'
+import BaseDialog from '@/components/core/dialog/BaseDialog.vue'
+import { useBusinessController } from '@/controllers/business/useBusinessController'
+import ConfirmDialog from '@/components/core/dialog/ConfirmDialog.vue'
 import { useToastStore } from '@/stores/toast'
-import { Lock, Unlock, ChevronDown } from 'lucide-vue-next'
+import { Lock, Unlock, ChevronDown, Trash2 } from 'lucide-vue-next'
 import BaseDropdown from '@/components/core/dropdown/BaseDropdown.vue'
 
+const controller = useBusinessController()
+const tableRef = ref()
 const toast = useToastStore()
 
-// Assuming columns for Business Accounts based on common sense + API docs hint
-const columns = [
-  { key: 'surname', label: 'Name', sortable: true },
-  { key: 'companyName', label: 'Company', sortable: true },
-  { key: 'email', label: 'Email', sortable: false },
-  { key: 'country.name', label: 'Country', sortable: false },
-  { key: 'isActive', label: 'Status', sortable: false },
-]
-
-const tableRef = ref()
-import ConfirmDialog from '@/components/core/dialog/ConfirmDialog.vue'
-
-// Confirm Dialog State
+// Confirmation State
 const showConfirmDialog = ref(false)
 const confirmLoading = ref(false)
 const confirmConfig = ref({
@@ -29,6 +20,106 @@ const confirmConfig = ref({
     message: '',
     action: null as (() => Promise<void>) | null
 })
+
+const columns = [
+  { key: 'companyName', label: 'Company Name', sortable: true },
+  { key: 'email', label: 'Email', sortable: true },
+  { key: 'tin', label: 'TIN', sortable: true },
+  { key: 'phoneNumber', label: 'Phone', sortable: false },
+  { key: 'country.name', label: 'Country', sortable: false },
+  { key: 'isActive', label: 'Status', sortable: false },
+]
+
+// Bulk Actions
+const selectedIds = ref<(number | string)[]>([])
+const onSelectionChange = (ids: (number | string)[]) => {
+    selectedIds.value = ids
+}
+
+const triggerBulkDelete = () => {
+    confirmConfig.value = {
+        title: 'Delete Accounts',
+        message: `Are you sure you want to permanently delete these ${selectedIds.value.length} accounts? This action cannot be undone.`,
+        action: processBulkDelete
+    }
+    showConfirmDialog.value = true
+}
+
+const processBulkDelete = async () => {
+    let successCount = 0
+    let lastMessage = ''
+    for (const id of selectedIds.value) {
+        const result = await controller.deleteAccount(Number(id))
+        if (result.success) {
+            successCount++
+            lastMessage = result.message || ''
+        }
+    }
+
+    if (successCount > 0) {
+        refreshTable()
+        toast.add({
+            type: 'success',
+            title: 'Bulk Delete',
+            message: lastMessage || `Successfully deleted ${successCount} accounts.`
+        })
+    } else {
+        toast.add({
+            type: 'warning',
+            title: 'Bulk Delete',
+            message: 'No accounts were deleted.'
+        })
+    }
+}
+
+const onBulkActivate = async (activate: boolean) => {
+    let successCount = 0
+    let lastMessage = ''
+    for (const id of selectedIds.value) {
+        const row = controller.accounts.value.find(a => a.id === id)
+        if (row && row.isActive !== activate) {
+             const result = await controller.toggleActivation(Number(id), row.isActive)
+             if (result.success) {
+                 successCount++
+                 lastMessage = result.message || ''
+             }
+        }
+    }
+
+    if (successCount > 0) {
+        refreshTable()
+        toast.add({
+            type: 'success',
+            title: activate ? 'Bulk Activate' : 'Bulk Deactivate',
+            message: lastMessage || `Successfully ${activate ? 'activated' : 'deactivated'} ${successCount} accounts.`
+        })
+    }
+}
+
+const triggerDelete = (row: Record<string, unknown>) => {
+    confirmConfig.value = {
+        title: 'Delete Account',
+        message: `Are you sure you want to delete ${row.companyName}? This action cannot be undone.`,
+        action: async () => {
+             const result = await controller.deleteAccount(row.id as number)
+             if (result.success) {
+                 refreshTable()
+                 toast.add({
+                     type: 'success',
+                     title: 'Deleted',
+                     message: result.message || 'Account deleted successfully.'
+                 })
+             } else {
+                 toast.add({
+                     type: 'error',
+                     title: 'Error',
+                     message: result.message || 'Failed to delete account.'
+                 })
+             }
+        }
+    }
+    showConfirmDialog.value = true
+}
 
 const handleConfirm = async () => {
     if (!confirmConfig.value.action) return
@@ -41,78 +132,53 @@ const handleConfirm = async () => {
     }
 }
 
-const processingId = ref<number | null>(null)
-const selectedIds = ref<(number | string)[]>([])
-
-const toggleActivation = (row: Record<string, unknown>) => {
-    const isActivating = !row.isActive
+const handleActivation = (id: number, currentStatus: boolean) => {
     confirmConfig.value = {
-        title: isActivating ? 'Activate Account' : 'Deactivate Account',
-        message: `Are you sure you want to ${isActivating ? 'activate' : 'deactivate'} this account?`,
+        title: currentStatus ? 'Deactivate Account' : 'Activate Account',
+        message: `Are you sure you want to ${currentStatus ? 'deactivate' : 'activate'} this account?`,
         action: async () => {
-            processingId.value = row.id as number
-            try {
-                await axios.post('/accounts/activation', {
-                    userId: row.id,
-                    activate: isActivating
-                })
-                if (tableRef.value) {
-                    tableRef.value.refresh()
-                }
+             const result = await controller.toggleActivation(id, currentStatus)
+            if (result.success) {
+                refreshTable()
                 toast.add({
                     type: 'success',
-                    title: 'Success',
-                    message: `Account ${isActivating ? 'activated' : 'deactivated'} successfully`
+                    title: currentStatus ? 'Deactivated' : 'Activated',
+                    message: result.message || `Account successfully ${currentStatus ? 'deactivated' : 'activated'}.`
                 })
-            } catch {
-                 toast.add({
+            } else {
+                toast.add({
                     type: 'error',
                     title: 'Error',
-                    message: 'Failed to update status'
+                    message: result.message || `Failed to ${currentStatus ? 'deactivate' : 'activate'} account.`
                 })
-            } finally {
-                processingId.value = null
             }
         }
     }
     showConfirmDialog.value = true
 }
 
-const onSelectionChange = (ids: (number | string)[]) => {
-    selectedIds.value = ids
+onMounted(() => {
+    controller.fetchCountries()
+})
+
+const refreshTable = () => {
+    tableRef.value?.refresh()
 }
 
-const onBulkActivate = async (activate: boolean) => {
-    let successCount = 0
-    let lastMessage = ''
-
-    for (const id of selectedIds.value) {
-         try {
-             await axios.post('/activation', {
-                userId: Number(id),
-                activate: activate
-             })
-             successCount++
-         } catch (error) {
-             const e = error as AxiosError<{message: string}>
-             console.error(`Failed to bulk update ${id}`, e)
-             if (e.response?.data?.message) lastMessage = e.response.data.message
-         }
-    }
-
-    if (successCount > 0) {
-        tableRef.value?.refresh()
-        selectedIds.value = []
+const onCreateSubmit = async () => {
+    const result = await controller.createAccount()
+    if (result.success) {
+        refreshTable()
         toast.add({
             type: 'success',
-            title: activate ? 'Bulk Activate' : 'Bulk Deactivate',
-            message: `Successfully ${activate ? 'activated' : 'deactivated'} ${successCount} accounts.`
+            title: 'Created',
+            message: result.message || 'New account created successfully.'
         })
-    } else if (lastMessage) {
+    } else {
         toast.add({
             type: 'error',
             title: 'Error',
-            message: lastMessage
+            message: result.message || 'Failed to create account.'
         })
     }
 }
@@ -122,16 +188,15 @@ const onBulkActivate = async (activate: boolean) => {
   <div>
     <div class="page-header">
         <h1>Business Accounts</h1>
-
     </div>
 
     <DataTable
       ref="tableRef"
       api-url="/business-accounts"
       :columns="columns"
-      searchable
       selectable
       @update:selection="onSelectionChange"
+      searchable
       title="Business Users"
     >
         <template #bulk-actions="{ selected }">
@@ -149,35 +214,99 @@ const onBulkActivate = async (activate: boolean) => {
                     <button @click="onBulkActivate(false)" class="bulk-menu-item">
                         <Lock :size="16" class="text-warning" /> Deactivate Selected
                     </button>
+                    <div class="separator"></div>
+                    <button @click="triggerBulkDelete" class="bulk-menu-item text-danger">
+                        <Trash2 :size="16" /> Delete Selected
+                    </button>
                 </div>
             </BaseDropdown>
         </template>
 
-        <!-- Name Concatenation -->
-        <template #cell-surname="{ row }">
-            {{ row.surname }} {{ row.otherNames }}
+        <template #header-actions>
+            <button @click="controller.showCreateDialog.value = true" class="create-btn">
+                + Create Account
+            </button>
         </template>
 
-        <!-- Status Column Customization -->
         <template #cell-isActive="{ row }">
             <span :class="['status-badge', row.isActive ? 'active' : 'inactive']">
                 {{ row.isActive ? 'Active' : 'Inactive' }}
             </span>
         </template>
 
-        <!-- Actions -->
         <template #actions="{ row }">
-             <button
-                class="icon-action"
-                :title="row.isActive ? 'Deactivate' : 'Activate'"
-                @click="toggleActivation(row)"
-                :disabled="processingId === row.id"
-            >
-                <Unlock v-if="!row.isActive" :size="16" />
-                <Lock v-else :size="16" />
-            </button>
+            <div class="actions-flex">
+                <button
+                    class="icon-action"
+                    :title="row.isActive ? 'Deactivate' : 'Activate'"
+                    @click="handleActivation(row.id as number, row.isActive as boolean)"
+                >
+                    <Unlock v-if="!row.isActive" :size="16" />
+                    <Lock v-else :size="16" />
+                </button>
+                <button class="icon-action danger" title="Delete" @click="triggerDelete(row)">
+                    <Trash2 :size="16" />
+                </button>
+            </div>
         </template>
     </DataTable>
+
+    <!-- Create Dialog -->
+    <BaseDialog
+        :show="controller.showCreateDialog.value"
+        title="Create Business Account"
+        @close="controller.showCreateDialog.value = false"
+    >
+        <form @submit.prevent="onCreateSubmit" id="createForm">
+             <div class="form-grid">
+                <div class="form-group">
+                    <label>Company Name *</label>
+                    <input v-model="controller.createForm.value.companyName" type="text" required class="premium-input" placeholder="Acme Corp" />
+                </div>
+
+                <div class="form-group">
+                    <label>TIN</label>
+                    <input v-model="controller.createForm.value.tin" type="text" class="premium-input" placeholder="Tax ID" />
+                </div>
+
+                <div class="form-group">
+                    <label>Email *</label>
+                    <input v-model="controller.createForm.value.email" type="email" required class="premium-input" placeholder="business@acme.com" />
+                </div>
+
+                <div class="form-group">
+                    <label>Password *</label>
+                    <input v-model="controller.createForm.value.password" type="password" required class="premium-input" placeholder="******" />
+                </div>
+
+                <div class="form-group">
+                    <label>Phone Number</label>
+                    <input v-model="controller.createForm.value.phoneNumber" type="tel" class="premium-input" placeholder="233..." />
+                </div>
+
+                <div class="form-group">
+                    <label>Country</label>
+                     <select v-model="controller.createForm.value.countryId" class="premium-input">
+                        <option value="" disabled>Select Country</option>
+                        <option v-for="c in controller.countries.value" :key="c.id" :value="c.id">
+                            {{ c.name }}
+                        </option>
+                    </select>
+                </div>
+
+                 <div class="form-group full-width">
+                    <label>Address</label>
+                    <textarea v-model="controller.createForm.value.address" class="premium-input" rows="3"></textarea>
+                </div>
+            </div>
+        </form>
+        <template #footer>
+            <button class="cancel-btn" @click="controller.showCreateDialog.value = false">Cancel</button>
+            <button type="submit" form="createForm" class="submit-btn" :disabled="controller.createLoading.value">
+                {{ controller.createLoading.value ? 'Creating...' : 'Create' }}
+            </button>
+        </template>
+    </BaseDialog>
 
     <ConfirmDialog
         v-model:show="showConfirmDialog"
@@ -205,42 +334,6 @@ const onBulkActivate = async (activate: boolean) => {
     font-weight: 700;
 }
 
-.status-badge {
-    padding: 0.25rem 0.75rem;
-    border-radius: 9999px;
-    font-size: 0.75rem;
-    font-weight: 600;
-}
-
-.status-badge.active {
-    background: #dcfce7;
-    color: #166534;
-}
-
-.status-badge.inactive {
-    background: #fee2e2;
-    color: #991b1b;
-}
-
-.create-btn {
-    background: var(--color-primary);
-    color: white;
-    border: none;
-    padding: 0.75rem 1.5rem;
-    border-radius: 8px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: background 0.2s;
-    font-family: inherit;
-    text-decoration: none;
-    display: inline-block;
-}
-
-.create-btn:hover {
-    background: var(--color-primary-hover);
-}
-
-/* Bulk Actions Styling */
 .bulk-trigger-btn {
     display: flex;
     align-items: center;
@@ -285,7 +378,41 @@ const onBulkActivate = async (activate: boolean) => {
     background: var(--color-bg-secondary);
 }
 
-/* Icon Action Styling */
+.separator {
+    height: 1px;
+    background: var(--color-border);
+    margin: 0.5rem 0;
+}
+
+.text-success { color: #10b981; }
+.text-warning { color: #f59e0b; }
+.text-danger { color: #ef4444; }
+
+.text-danger:hover {
+    background: #fef2f2;
+}
+
+.create-btn {
+    background: var(--color-primary);
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s;
+    font-family: inherit;
+}
+
+.create-btn:hover {
+    background: var(--color-primary-hover);
+}
+
+.actions-flex {
+    display: flex;
+    gap: 0.5rem;
+}
+
 .icon-action {
     background: none;
     border: 1px solid var(--color-border);
@@ -299,17 +426,79 @@ const onBulkActivate = async (activate: boolean) => {
     transition: all 0.2s;
 }
 
-.icon-action:hover:not(:disabled) {
+.icon-action:hover {
     background: var(--color-bg-secondary);
     color: var(--color-primary);
     border-color: var(--color-primary);
 }
 
-.icon-action:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
+.icon-action.danger:hover {
+    color: var(--color-danger);
+    border-color: var(--color-danger);
 }
 
-.text-success { color: #10b981; }
-.text-warning { color: #f59e0b; }
+.status-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.status-badge.active {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.status-badge.inactive {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+/* Form Styles used in Dialog */
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.full-width {
+    grid-column: span 2;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.form-group label {
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+.premium-input {
+    padding: 0.6rem;
+    border: 1px solid var(--color-border-input);
+    border-radius: 6px;
+    background: var(--color-bg-input);
+    color: var(--color-text-primary);
+}
+
+.submit-btn, .cancel-btn {
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    font-weight: 500;
+    cursor: pointer;
+    border: none;
+}
+
+.submit-btn {
+    background: var(--color-primary);
+    color: white;
+}
+
+.cancel-btn {
+    background: transparent;
+    color: var(--color-text-secondary);
+}
 </style>
