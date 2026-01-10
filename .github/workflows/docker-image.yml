@@ -1,0 +1,103 @@
+# This is a basic workflow to help you get started with Actions
+name: CI for Frontend
+# Controls when the action will run. 
+on:
+  # Triggers the workflow on push or pull request events but only for the main branch
+  push:
+    branches: [ dev ]
+    paths-ignore:
+      - README.md
+      - .vscode/**
+      - .gitignore
+  # pull_request:
+    # branches: [ dev ]
+    # tags: [ v* ]
+    # paths-ignore:
+    #   - README.md
+    #   - .vscode/**
+    #   - .gitignore
+  release:
+    branches: [ main ]
+    tags: [ v* ]
+    paths-ignore:
+      - README.md
+      - .vscode/**
+      - .gitignore
+         
+      
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+ docker-dev:
+    if: github.event_name == 'push' && contains(github.event.head_commit.message, '[deploy]')
+    runs-on: ubuntu-latest
+    steps:
+      -
+        name: Checkout
+        uses: actions/checkout@v4
+      -
+        name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKERHUB_REPOSITORY }} 
+      # -
+      #   name: Set up QEMU
+      #   uses: docker/setup-qemu-action@v3
+      -
+        name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      -
+        name: Login to DockerHub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }} 
+      -
+        name: Build and push Docker Image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          # push: ${{ github.event_name != 'pull_request' }}
+          # tags: ${{ steps.meta.outputs.tags }}, ${{ secrets.DOCKERHUB_USERNAME }}/dev_ops_basics:dev-v${{ github.run_number }}
+          # labels: ${{ steps.meta.outputs.labels }}
+          push: true
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKERHUB_REPOSITORY }}:dev
+
+ docker-prod:
+    if: github.event_name == 'release' && startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    steps:
+      -
+        name: Checkout
+        uses: actions/checkout@v4
+      -
+        name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKERHUB_REPOSITORY }}
+      -
+        name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+      -
+        name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      -
+        name: Login to DockerHub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      -
+        name: Build and push Docker Image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          # push: ${{ github.event_name == 'release' }}
+          push: true
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKERHUB_REPOSITORY }}:latest, ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          # tags: ${{ secrets.DOCKERHUB_USERNAME }}/dev_ops_basics:latest, ${{ secrets.DOCKERHUB_USERNAME }}/dev_ops_basics:${{ github.run_number }}
